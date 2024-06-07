@@ -4,7 +4,6 @@ venv/
 .vs/
 *.pyc
 .env
-staticfiles/
 media/
 *.sqlite3
 *.lock
