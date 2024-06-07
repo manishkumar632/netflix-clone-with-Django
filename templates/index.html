@@ -46,8 +46,13 @@
                 <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
             </form>
             <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{user.username}}</a>
-                <a href="/logout" class="block p-2">Logout</a>
+                {% if user.is_authenticated %}
+                    <a href="#" class="block p-2">Welcome, {{ user.username }}</a>
+                    <a href="/logout" class="block p-2">Logout</a>
+                {% else %}
+                    <a href="#" class="block p-2">Welcome</a>
+                    <a href="/login" class="block p-2">Login</a>
+                {% endif %}
             </div>
         </div>
     </header>
