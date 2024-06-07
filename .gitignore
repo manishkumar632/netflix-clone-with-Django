@@ -1,0 +1,16 @@
+venv/
+.vscode/
+.idea/
+.vs/
+*.pyc
+.env
+staticfiles/
+media/
+*.sqlite3
+*.lock
+__pycache__/
+*.log
+*.tmp
+.pytest_cache/
+local_settings.py
+.dist/
