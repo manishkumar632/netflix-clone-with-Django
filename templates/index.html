@@ -159,7 +159,7 @@
             const modal = document.getElementById('movieModal')
             var movieID = modal.querySelector('.modal-content a').href;
 
-            $.ajax({
+            {% comment %} $.ajax({
                 url: "{% url 'add-to-list' %}",
                 type: "POST",
                 data: {
@@ -177,7 +177,7 @@
                     
                     console.error("Error adding item to list: " + errmsg);
                 }
-            });
+            }); {% endcomment %}
         }
     </script>
 </body>
