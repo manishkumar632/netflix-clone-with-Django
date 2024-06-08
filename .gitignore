@@ -13,3 +13,4 @@ __pycache__/
 .pytest_cache/
 local_settings.py
 .dist/
+testfolder/

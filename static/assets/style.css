@@ -22,13 +22,16 @@
 
 .modal-show {
     transform: scale(1);
-}        
+}
 
 .film-card {
     width: 200px;
     height: 300px;
     transition: transform 0.3s ease, border-radius 0.3s ease;
     border-radius: 4px;
+    overflow: hidden;
+    scrollbar-width: 0px;
+    overflow-x: hidden;
 }
 
 .film-card:hover {
@@ -62,4 +65,9 @@
 
 .dropdown:hover .dropdown-content {
     display: block; /* Show dropdown content on hover */
+}
+
+
+::-webkit-scrollbar{
+    display: none;
 }

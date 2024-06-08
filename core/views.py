@@ -1,9 +1,24 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
+from .models import Movie, MovieList
+from datetime import datetime
+from django.contrib.auth.decorators import login_required
+import re
+from django.http import JsonResponse
+from django.core.serializers import serialize
+import json
+@login_required(login_url='login')
+def convetDateTime(date):
+    date_str = date
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    formatted_date = date_obj.strftime("%b %d, %Y")
+    print(formatted_date)
+    return formatted_date
 
 def index(request):
-    return render(request, 'index.html')
+    movies = Movie.objects.all()
+    return render(request, 'index.html', {'movies': movies})
 
 def login(request):
     if request.method == 'POST':
@@ -45,3 +60,54 @@ def signup(request):
             return redirect('signup')
 
     return render(request, 'signup.html')
+
+@login_required(login_url='login')
+def movie(request, pk):
+    movie = Movie.objects.get(uu_id=pk)
+    context = {
+        'movie_details': movie
+    }
+    return render(request, 'movie.html', {'movie': movie})
+
+@login_required(login_url='login')
+def my_list(request):
+    return render(request, 'my_list.html')
+
+@login_required(login_url='login')
+def logout(request):
+    auth.logout(request)
+    return redirect('/')
+
+
+@login_required(login_url='login')
+def add_to_list(request):
+    if request.method == 'POST':
+        movie_id = request.POST['movie_id']
+        print(movie_id)
+        movie = get_object_or_404(Movie, uu_id=movie_id)
+        movie_list, created = MovieList.objects.get_or_create(
+            owner_user=request.user, movie=movie
+        )
+        if created:
+            response_data = {
+                'status': 'success',
+                'message': 'Added ✔'
+                }
+        else:
+            response_data = {
+                'status': 'error',
+                'message': 'Movie already in your list'
+            }
+
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+@login_required(login_url='login')
+def my_list(request):
+    movie_lists = MovieList.objects.filter(owner_user=request.user)
+    movie_list = [movie.movie for movie in movie_lists]
+    movie_list_json = serialize('json', movie_list)
+    movies = json.loads(movie_list_json)
+    return render(request, "my_list.html", {"movies": movies})

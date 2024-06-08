@@ -63,18 +63,18 @@
         </div>
         <div class="flex space-x-5 overflow-x-auto">
 
-            {% for movie in movies reversed %}
+            {% for movie in movies %}
             <div class="w-40 h-64 flex-shrink-0 film-card"
-                onclick="showModal(this)" 
-                data-title="{{ movie.title }}"
-                data-description="{{ movie.description }}"
-                data-release-date="{{ movie.release_date|date:'Y' }}"
-                data-genre="{{ movie.get_genre_display }}" 
-                data-length="{{ movie.length }}"
-                data-image-card-url="{{ movie.image_card.url }}"
-                data-image-cover-url="{{ movie.image_cover.url }}"
-                data-video-url="/movie/{{ movie.uu_id }}"
-                style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;">
+                onclick="showModal(this)"
+                data-title="{{ movie.fields.title }}"
+                data-description="{{ movie.fields.description }}"
+                data-release-date="{{ movie.fields.release_date}}"
+                data-genre="{{ movie.fields.get_genre_display }}" 
+                data-length="{{ movie.fields.length }}"
+                data-image-card-url="{{ movie.fields.image_card.url }}"
+                data-image-cover-url="{{ movie.fields.image_cover.url }}"
+                data-video-url="/movie/{{ movie.fields.uu_id }}"
+                style="background-image: url('{{movie.fields.image_card.url}}'); background-size: cover; background-position: center;">
             </div>
             {% endfor %}
     </section>
@@ -174,6 +174,10 @@
                 }
             });
         }
+    </script>
+    <script>
+        const movieLists = JSON.parse('{{ movies|escapejs }}');
+        console.log(movieLists);
     </script>
 </body>
 

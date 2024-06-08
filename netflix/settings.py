@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+import cloudinary_storage
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +33,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# print("Cloudinary Credentials:")
+# print("CLOUD_NAME:", config("CLOUDINARY_NAME"))
+# print("API_KEY:", config("CLOUDINARY_API_KEY"))
+# print("API_SECRET:", config("CLOUDINARY_API_SECRET"))
+
 
 # Application definition
 
@@ -42,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "cloudinary",
     "cloudinary_storage",
+    "django_filters",
     "core",
 ]
 
@@ -133,7 +142,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
+    "CLOUD_NAME": config("CLOUDINARY_NAME"),
     "API_KEY": config("CLOUDINARY_API_KEY"),
     "API_SECRET": config("CLOUDINARY_API_SECRET"),
 }
