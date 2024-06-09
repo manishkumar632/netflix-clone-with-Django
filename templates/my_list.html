@@ -10,13 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-   
 </head>
 
 <body class="text-white" style="background-color: #141414;">
     <header class="p-5 flex justify-between items-center">
         <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
-        
         
         <nav class="flex space-x-5">
             <span><a href="/">Home</a></span>
@@ -38,7 +36,6 @@
             <span><a href="/my-list">My List</a></span>
         </nav>
 
-
         <div class="flex space-x-5 items-center">
             <form action="search" method="POST">
                 {% csrf_token %}
@@ -46,7 +43,7 @@
                 <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
             </form>
             <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{user.username}}</a>
+                <a href="#" class="block p-2">Welcome, {{ user.username }}</a>
                 <a href="/logout" class="block p-2">Logout</a>
             </div>
         </div>
@@ -55,47 +52,29 @@
     <hr>
 
     <section class="py-10 px-5">
-    
         <div align="center">
-            <h2 class="text-xl mb-5">
-                My List
-            </h2>
+            <h2 class="text-xl mb-5">My List</h2>
         </div>
-        <div class="flex space-x-5 overflow-x-auto">
-
-            {% for movie in movies %}
-            <div class="w-40 h-64 flex-shrink-0 film-card"
-                onclick="showModal(this)"
-                data-title="{{ movie.fields.title }}"
-                data-description="{{ movie.fields.description }}"
-                data-release-date="{{ movie.fields.release_date}}"
-                data-genre="{{ movie.fields.get_genre_display }}" 
-                data-length="{{ movie.fields.length }}"
-                data-image-card-url="{{ movie.fields.image_card.url }}"
-                data-image-cover-url="{{ movie.fields.image_cover.url }}"
-                data-video-url="/movie/{{ movie.fields.uu_id }}"
-                style="background-image: url('{{movie.fields.image_card.url}}'); background-size: cover; background-position: center;">
-            </div>
-            {% endfor %}
+        <div class="flex space-x-5 overflow-x-auto" id="movie-list">
+            <!-- Movies will be injected here by JavaScript -->
+        </div>
     </section>
     
-   
-
     <!-- Modal -->
     <div class="modal" id="movieModal">
         <div class="modal-content">
             <div class="flex justify-between">
-                <h2 class="text-xl mb-5">Movie Title</h2>
+                <h2 class="text-xl mb-5" id="modal-title">Movie Title</h2>
                 <button onclick="hideModal()">X</button>
             </div>
-            <img width="1000" height="100" src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg" alt="Movie Image" class=" mb-5">
+            <img id="modal-image" width="1000" height="100" src="" alt="Movie Image" class="mb-5">
             <div class="flex justify-between mb-5">
-                <span>Year: 2023</span>
-                <span>Length: 2h 15min</span>
+                <span id="modal-year">Year: </span>
+                <span id="modal-length">Length: </span>
             </div>
-            <p class="mb-5">Detailed information about the movie.</p>
+            <p class="mb-5" id="modal-description">Detailed information about the movie.</p>
             <div class="flex space-x-4 mb-5">
-                <a href="movie.html">
+                <a id="modal-video-link" href="">
                     <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
                 </a>
                 <button id="addToListButton" onclick="addItemToList()" class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700">
@@ -106,29 +85,48 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const movies = JSON.parse('{{ movies_json|escapejs }}');
+            const movieListContainer = document.getElementById('movie-list');
+            
+            movies.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.className = 'w-40 h-64 flex-shrink-0 film-card';
+                movieCard.style.backgroundImage = `url(${movie.fields.image_card})`;
+                movieCard.style.backgroundSize = 'cover';
+                movieCard.style.backgroundPosition = 'center';
+                movieCard.setAttribute('data-title', movie.fields.title || 'Unknown Title');
+                movieCard.setAttribute('data-description', movie.fields.description || 'No description available.');
+                movieCard.setAttribute('data-release-date', movie.fields.release_date || 'Unknown Year');
+                movieCard.setAttribute('data-genre', movie.fields.get_genre_display || 'Unknown Genre');
+                movieCard.setAttribute('data-length', movie.fields.length || 'Unknown Length');
+                movieCard.setAttribute('data-image-card-url', movie.fields.image_card || '');
+                movieCard.setAttribute('data-image-cover-url', movie.fields.image_cover || '');
+                movieCard.setAttribute('data-video-url', movie.fields.uu_id ? `/movie/${movie.fields.uu_id}` : '#');
+                movieCard.onclick = function() { showModal(this); };
+
+                movieListContainer.appendChild(movieCard);
+            });
+        });
+
         function showModal(element) {
-            // Retrieve data attributes
             const title = element.getAttribute('data-title');
             const description = element.getAttribute('data-description');
             const releaseDate = element.getAttribute('data-release-date');
             const genre = element.getAttribute('data-genre');
             const length = element.getAttribute('data-length');
-            const imageCardUrl = element.getAttribute('data-image-card-url');
             const imageCoverUrl = element.getAttribute('data-image-cover-url');
             const dataVideoUrl = element.getAttribute('data-video-url');
-        
-            // Update the modal's content with the movie details
+
             const modal = document.getElementById('movieModal');
-            modal.querySelector('.modal-content h2').textContent = title;
-            modal.querySelector('.modal-content img').src = imageCoverUrl;
-            modal.querySelector('.modal-content a').href = dataVideoUrl;  
-            modal.querySelector('.modal-content img').alt = title + " Cover Image";
-            modal.querySelector('.modal-content .flex span:first-child').textContent = "Year: " + releaseDate;
-            modal.querySelector('.modal-content .flex span:nth-child(2)').textContent = "Genre: " + genre;
-            modal.querySelector('.modal-content .flex span:last-child').textContent = "Length: " + length + "min";
-            modal.querySelector('.modal-content p').textContent = description;
-        
-            // Show the modal
+            modal.querySelector('#modal-title').textContent = title;
+            modal.querySelector('#modal-image').src = imageCoverUrl || '';
+            modal.querySelector('#modal-video-link').href = dataVideoUrl || '#';
+            modal.querySelector('#modal-image').alt = title + " Cover Image";
+            modal.querySelector('#modal-year').textContent = "Year: " + releaseDate;
+            modal.querySelector('#modal-length').textContent = "Length: " + length + " min";
+            modal.querySelector('#modal-description').textContent = description;
+
             modal.style.display = 'block';
             setTimeout(() => {
                 modal.classList.add('modal-show');
@@ -136,13 +134,12 @@
         }
         
         function hideModal() {
-            const modal = document.querySelector('.modal');
+            const modal = document.getElementById('movieModal');
             modal.classList.remove('modal-show');
             setTimeout(() => {
                 modal.style.display = 'none';
             }, 300);
         }
-        
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('movieModal')) {
@@ -151,8 +148,8 @@
         }
 
         function addItemToList() {
-            const modal = document.getElementById('movieModal')
-            var movieID = modal.querySelector('.modal-content a').href;
+            const modal = document.getElementById('movieModal');
+            const movieID = modal.querySelector('#modal-video-link').href.split('/').pop();
 
             $.ajax({
                 url: "{% url 'add-to-list' %}",
@@ -163,22 +160,14 @@
                 },
                 success: function(data) {
                     $('#addToListButton').text(data.message);
-
                     $('#addToListButton').prop('disabled', true);
-
                     console.log("Item added to list!");
                 },
                 error: function(xhr, errmsg, err) {
-                    
                     console.error("Error adding item to list: " + errmsg);
                 }
             });
         }
     </script>
-    <script>
-        const movieLists = JSON.parse('{{ movies|escapejs }}');
-        console.log(movieLists);
-    </script>
 </body>
-
 </html>

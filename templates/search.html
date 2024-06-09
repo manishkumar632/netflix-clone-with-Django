@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,20 +9,42 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-   
+    <style>
+        /* Remove grid-related styles */
+        .movie-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .film-card {
+            width: calc(33.33% - 20px); /* Adjust width based on the number of items per row */
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 768px) {
+            .film-card {
+                width: calc(50% - 20px); /* Adjust width for smaller screens */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .film-card {
+                width: 100%; /* Full width for extra small screens */
+            }
+        }
+    </style>
 </head>
 
 <body class="text-white" style="background-color: #141414;">
     <header class="p-5 flex justify-between items-center">
         <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
         
-        
         <nav class="flex space-x-5">
             <span><a href="/">Home</a></span>
-            
             <div class="dropdown">
                 <span id="dropdownMenuButton" class="cursor-pointer">Genres ▼</span>
-                
                 <div id="dropdownMenu" class="dropdown-content hidden">
                     <ul><a href="/genre/action/">Action</a></ul>
                     <ul><a href="/genre/comedy/">Comedy</a></ul>
@@ -34,10 +55,8 @@
                     <ul><a href="/genre/fantasy/">Fantasy</a></ul>
                 </div>
             </div>
-
             <span><a href="/my-list">My List</a></span>
         </nav>
-
 
         <div class="flex space-x-5 items-center">
             <form action="search" method="POST">
@@ -46,7 +65,7 @@
                 <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
             </form>
             <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{user.username}}</a>
+                <a href="#" class="block p-2">Welcome, {{ user.username }}</a>
                 <a href="/logout" class="block p-2">Logout</a>
             </div>
         </div>
@@ -55,31 +74,32 @@
     <hr>
 
     <section class="py-10 px-5">
-    
         <div align="center">
             <h2 class="text-xl mb-5">
-                Search Result for '{{search_term}}'
+                Search Results for '{{ search_term }}'
             </h2>
         </div>
-        <div class="flex space-x-5 overflow-x-auto">
-
-            {% for movie in movies reversed %}
-            <div class="w-40 h-64 flex-shrink-0 film-card"
-                onclick="showModal(this)" 
-                data-title="{{ movie.title }}"
-                data-description="{{ movie.description }}"
-                data-release-date="{{ movie.release_date|date:'Y' }}"
-                data-genre="{{ movie.get_genre_display }}" 
-                data-length="{{ movie.length }}"
-                data-image-card-url="{{ movie.image_card.url }}"
-                data-image-cover-url="{{ movie.image_cover.url }}"
-                data-video-url="/movie/{{ movie.uu_id }}"
-                style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;">
-            </div>
-            {% endfor %}
+        <div class="flex flex-wrap gap-5">
+            {% if movies %}
+                {% for movie in movies %}
+                    <div class="w-30 h-64 flex-shrink-0 film-card"
+                        onclick="showModal(this)"
+                        data-title="{{ movie.title }}"
+                        data-description="{{ movie.overview }}"
+                        data-release-date="{{ movie.release_date|date:'Y' }}"
+                        data-genre="{{ movie.genre_ids }}"
+                        data-length="{{ movie.runtime }}"
+                        data-image-card-url="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}"
+                        data-image-cover-url="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}"
+                        data-video-url="/movie/{{ movie.id }}"
+                        style="background-image: url('https://image.tmdb.org/t/p/w500{{ movie.poster_path }}');background-size: cover; background-position: center;">
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No results found.</p>
+            {% endif %}
+        </div>
     </section>
-    
-   
 
     <!-- Modal -->
     <div class="modal" id="movieModal">
@@ -88,10 +108,11 @@
                 <h2 class="text-xl mb-5">Movie Title</h2>
                 <button onclick="hideModal()">X</button>
             </div>
-            <img width="1000" height="100" src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg" alt="Movie Image" class=" mb-5">
+            <img width="1000" height="100" src="" alt="Movie Image" class="mb-5">
             <div class="flex justify-between mb-5">
-                <span>Year: 2023</span>
-                <span>Length: 2h 15min</span>
+                <span>Year: </span>
+                <span>Genre: </span>
+                <span>Length: </span>
             </div>
             <p class="mb-5">Detailed information about the movie.</p>
             <div class="flex space-x-4 mb-5">
@@ -104,7 +125,6 @@
             </div>
         </div>
     </div>
-
     <script>
         function showModal(element) {
             // Retrieve data attributes
@@ -142,7 +162,6 @@
                 modal.style.display = 'none';
             }, 300);
         }
-        
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('movieModal')) {
@@ -151,8 +170,8 @@
         }
 
         function addItemToList() {
-            const modal = document.getElementById('movieModal')
-            var movieID = modal.querySelector('.modal-content a').href;
+            const modal = document.getElementById('movieModal');
+            const movieID = modal.querySelector('.modal-content a').href;
 
             $.ajax({
                 url: "{% url 'add-to-list' %}",
@@ -163,13 +182,10 @@
                 },
                 success: function(data) {
                     $('#addToListButton').text(data.message);
-
                     $('#addToListButton').prop('disabled', true);
-
                     console.log("Item added to list!");
                 },
                 error: function(xhr, errmsg, err) {
-                    
                     console.error("Error adding item to list: " + errmsg);
                 }
             });

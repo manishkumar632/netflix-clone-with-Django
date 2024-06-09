@@ -10,13 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-   
 </head>
 
 <body class="text-white" style="background-color: #141414;">
     <header class="p-5 flex justify-between items-center">
         <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
-        
         
         <nav class="flex space-x-5">
             <span><a href="/">Home</a></span>
@@ -37,7 +35,6 @@
 
             <span><a href="/my-list">My List</a></span>
         </nav>
-
 
         <div class="flex space-x-5 items-center">
             <form action="search" method="POST">
@@ -68,10 +65,8 @@
         </div>
     </section>
     <section class="py-10 px-5">
-    
         <h2 class="text-xl mb-5">Popular on Netflix</h2>
-        <div class="flex space-x-5 overflow-x-auto">
-
+        <div class="flex flex-wrap gap-5">
             {% for movie in movies %}
             <div class="w-40 h-64 flex-shrink-0 film-card"
                 onclick="showModal(this)"
@@ -82,13 +77,12 @@
                 data-length="{{ movie.length }}"
                 data-image-card-url="{{ movie.image_card.url }}"
                 data-image-cover-url="{{ movie.image_cover.url }}"
-                data-video-url="/movie/{{ movie.uu_id }}"
+                data-id="{{ movie.tmdb_id }}"
                 style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;">
             </div>
             {% endfor %}
+        </div>
     </section>
-    
-    
 
     <!-- Modal -->
     <div class="modal" id="movieModal">
@@ -111,7 +105,6 @@
                     Add to List
                 </button>
             </div>
-            
         </div>
     </div>
 
@@ -125,7 +118,7 @@
             const length = element.getAttribute('data-length');
             const imageCardUrl = element.getAttribute('data-image-card-url');
             const imageCoverUrl = element.getAttribute('data-image-cover-url');
-            const dataVideoUrl = element.getAttribute('data-video-url');
+            const dataVideoUrl = element.getAttribute('data-id');
         
             // Update the modal's content with the movie details
             const modal = document.getElementById('movieModal');
@@ -152,7 +145,6 @@
                 modal.style.display = 'none';
             }, 300);
         }
-        
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('movieModal')) {
@@ -163,13 +155,12 @@
         function addItemToList(element) {
             const movieImg = element.parentNode;
             const hrefElement = movieImg.querySelector('a[href]');
-            const href = hrefElement.getAttribute('href');
-            const uuid = href.split('/').pop();
+            const id = hrefElement.getAttribute('href');
             $.ajax({
                 url: "{% url 'add-to-list' %}",
                 type: "POST",
                 data: {
-                    movie_id: uuid,
+                    tmdb_id: id,
                     csrfmiddlewaretoken: "{{ csrf_token }}"
                 },
                 success: function(data) {
