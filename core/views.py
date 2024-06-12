@@ -7,7 +7,7 @@ import requests, json, urllib.parse
 from django.http import JsonResponse
 from decouple import config
 
-accept = config("ACCEPT")
+accept = config("ACCEPT", )
 authorization = config("AUTHORIZATION")
 headers = {
     "accept": accept,
