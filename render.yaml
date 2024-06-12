@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: my-django-app
+    env: python
+    buildCommand: 
+      - pip install -r requirements.txt
+      - python manage.py collectstatic --noinput
+    startCommand: gunicorn netflix.wsgi
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+    staticPublishPath: staticfiles
