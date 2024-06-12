@@ -7,7 +7,12 @@ import requests, json, urllib.parse
 from django.http import JsonResponse
 from decouple import config
 
-
+accept = config("ACCEPT")
+authorization = config("AUTHORIZATION")
+headers = {
+    "accept": accept,
+    "Authorization": authorization,
+}
 def index(request):
     movies = Movie.objects.exclude(image_card__isnull=True).exclude(
         image_card__exact=""
@@ -104,10 +109,6 @@ def search(request):
         search_term = request.POST.get("search_term", "")
         encoded_search_term = urllib.parse.quote_plus(search_term)
         url = f"https://api.themoviedb.org/3/search/movie?query={encoded_search_term}"
-        headers = {
-            "accept": "application/json",
-            "Authorization": "Bearer " + config("TOKEN"),
-        }
         response = requests.get(url, headers=headers)
         movies_data = response.json().get("results", [])
         movies_data = [movie for movie in movies_data if movie.get("backdrop_path")]
@@ -141,12 +142,6 @@ def search_add_to_list(request):
 def trailer(request):
     id = request.GET.get("id")
     url = "https://api.themoviedb.org/3/movie/{}/videos".format(id)
-    print(url)
-
-    headers = {
-        "accept": "application/json",
-        "Authorization": "Bearer " + config("TOKEN"),
-    }
     response = requests.get(url, headers=headers)
     data = response.json()
     filtered_data = [video for video in data["results"] if video["type"] == "Trailer"]
@@ -157,7 +152,6 @@ def trailer(request):
 
 
 def genre(request, genre):
-    print(genre)
     movies = Movie.objects.filter(genre__icontains=genre)
     return render(request, "genre.html", {"movies": movies})
 

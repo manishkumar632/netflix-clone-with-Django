@@ -7,20 +7,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netflix Clone</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
 <body class="text-white" style="background-color: #141414;">
     {% include 'header.html' %}
     <section class="relative py-20 px-10"
-        style="background-image: url('{{featured_movie.image_cover.url}}'); background-size: cover; background-position: center;">
+        style="background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/cacfadb7-c017-4318-85e4-7f46da1cae88/e43aa8b1-ea06-46a5-abe3-df13243e718d/IN-en-20240603-popsignuptwoweeks-perspective_alpha_website_small.jpg'); background-size: cover; background-position: center;">
         <div>
             <h1 style="color: black;" class="text-5xl mb-5">{{featured_movie.title}}</h1>
             <p style="color: black;" class="mb-5">{{featured_movie.description}}</p>
             <div class="flex space-x-4">
-                <a href="/movie/{{featured_movie.uu_id}}">
+                <a href="#">
                     <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
                 </a>
             </div>

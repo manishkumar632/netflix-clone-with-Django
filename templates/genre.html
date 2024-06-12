@@ -58,7 +58,7 @@
             </div>
             <p class="mb-5">Detailed information about the movie.</p>
             <div class="flex space-x-4 mb-5">
-                <a href="movie.html">
+                <a id="playButton" href="#">
                     <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
                 </a>
                 <button id="addToListButton" onclick="addItemToList()"
@@ -82,6 +82,7 @@
             const imageCardUrl = element.getAttribute('data-image-card-url');
             const imageCoverUrl = element.getAttribute('data-image-cover-url');
             const dataVideoUrl = element.getAttribute('data-video-url');
+            const id = element.getAttribute('data-id');
             // Update the modal's content with the movie details
             const modal = document.getElementById('movieModal');
             modal.querySelector('.modal-content h2').textContent = title;
@@ -92,6 +93,7 @@
             modal.querySelector('.modal-content .flex span:nth-child(2)').textContent = "Genre: " + genre;
             modal.querySelector('.modal-content .flex span:last-child').textContent = "Length: " + length + "min";
             modal.querySelector('.modal-content p').textContent = description;
+            modal.querySelector('#playButton').href = `/trailer?id=${id}`;
             // Show the modal
             modal.style.display = 'block';
             setTimeout(() => {
