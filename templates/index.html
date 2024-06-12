@@ -2,194 +2,143 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-            rel="stylesheet"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="{% static 'assets/style.css' %}"
-        />
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <title>Netflix Clone</title>
-    </head>
 
-    <body class="text-white" style="background-color: #141414">
-        {% include 'header.html' %}
-        <section
-            class="relative py-20 px-10"
-            style="
-                background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/cacfadb7-c017-4318-85e4-7f46da1cae88/e43aa8b1-ea06-46a5-abe3-df13243e718d/IN-en-20240603-popsignuptwoweeks-perspective_alpha_website_small.jpg');
-                background-size: cover;
-                background-position: center;
-            "
-        >
-            <div>
-                <h1 style="color: black" class="text-5xl mb-5">
-                    {{featured_movie.title}}
-                </h1>
-                <p style="color: black" class="mb-5">
-                    {{featured_movie.description}}
-                </p>
-                <div class="flex space-x-4">
-                    <a href="#">
-                        <button
-                            class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500"
-                        >
-                            Play
-                        </button>
-                    </a>
-                </div>
-            </div>
-        </section>
-        <section class="py-10 px-5">
-            <h2 class="text-xl mb-5">Popular on Netflix</h2>
-            <div class="flex flex-wrap gap-5">
-                {% for movie in movies reversed %}
-                <div
-                    class="w-40 h-64 flex-shrink-0 film-card"
-                    onclick="showModal(this)"
-                    data-title="{{ movie.title }}"
-                    data-description="{{ movie.description }}"
-                    data-release-date="{{ movie.release_date}}"
-                    data-genre="{{ movie.genre }}"
-                    data-image-card-url="{{ movie.image_card.url }}"
-                    data-image-cover-url="{{ movie.image_cover.url }}"
-                    data-id="{{ movie.tmdb_id }}"
-                    length="{{ movie.length }}"
-                    style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;"
-                ></div>
-                {% endfor %}
-            </div>
-        </section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Clone</title>
+</head>
 
-        <!-- Modal -->
-        <div class="modal" id="movieModal">
-            <div class="modal-content">
-                <div class="flex justify-between">
-                    <h2 class="text-xl mb-5">Movie Title</h2>
-                    <button onclick="hideModal()">X</button>
-                </div>
-                <img
-                    width="1000"
-                    height="100"
-                    src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg"
-                    alt="Movie Image"
-                    class="mb-5"
-                />
-                <div class="flex justify-between mb-5">
-                    <span>Year: 2023</span>
-                    <span class="genre">Genres</span>
-                    <span>Length: 2h 15min</span>
-                </div>
-                <p class="mb-5">Detailed information about the movie.</p>
-                <div class="flex space-x-4 mb-5">
-                    <a href="#">
-                        <button
-                            class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500 playbutton"
-                        >
-                            Play
-                        </button>
-                    </a>
-                    <button
-                        class="addToListButton"
-                        onclick="addItemToList(this)"
-                        class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700"
-                        data-id="{{ movie.tmdb_id }}"
-                    >
-                        Add to List
-                    </button>
-                </div>
+<body class="text-white" style="background-color: #141414;">
+    {% include 'header.html' %}
+    <section class="relative py-20 px-10"
+        style="background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/cacfadb7-c017-4318-85e4-7f46da1cae88/e43aa8b1-ea06-46a5-abe3-df13243e718d/IN-en-20240603-popsignuptwoweeks-perspective_alpha_website_small.jpg'); background-size: cover; background-position: center;">
+        <div>
+            <h1 style="color: black;" class="text-5xl mb-5">{{featured_movie.title}}</h1>
+            <p style="color: black;" class="mb-5">{{featured_movie.description}}</p>
+            <div class="flex space-x-4">
+                <a href="#">
+                    <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
+                </a>
             </div>
         </div>
-        <script>
-            function showModal(element) {
-                let length = element.getAttribute("length");
-                length =
-                    Math.floor(length / 60) + " hrs " + (length % 60) + " min";
-                // Retrieve data attributes
-                const title = element.getAttribute("data-title");
-                const description = element.getAttribute("data-description");
-                const releaseDate = element.getAttribute("data-release-date");
-                const genre = element.getAttribute("data-genre");
-                const imageCardUrl = element.getAttribute(
-                    "data-image-card-url"
-                );
-                const imageCoverUrl = element.getAttribute(
-                    "data-image-cover-url"
-                );
-                const dataVideoUrl = element.getAttribute("data-id");
-                const tmdbId = element.getAttribute("data-id");
-                // Get the modal element
-                const modal = document.getElementById("movieModal");
-                // Update the Add to List button in the modal
-                const selectButton = modal.querySelector(".addToListButton");
-                selectButton.textContent = "Add to List";
-                $(selectButton).prop("disabled", false);
-                selectButton.setAttribute("data-id", tmdbId);
-                // Update the modal's content with the movie details
-                modal.querySelector(".modal-content h2").textContent = title;
-                modal.querySelector(".modal-content img").src = imageCoverUrl;
-                modal.querySelector(".modal-content img").alt =
-                    title + " Cover Image";
-                modal.querySelector(
-                    ".modal-content .flex span:first-child"
-                ).textContent = "Year: " + releaseDate;
-                modal.querySelector(
-                    ".modal-content .flex span:nth-child(2)"
-                ).textContent = "Genre: " + genre;
-                modal.querySelector(
-                    ".modal-content .flex span:last-child"
-                ).textContent = "Length: " + length;
-                modal.querySelector(".modal-content p").textContent =
-                    description;
-                modal.querySelector("a").href = `trailer?id=${tmdbId}`;
-                modal.querySelector(".genre").textContent = genre;
-                // Show the modal
-                modal.style.display = "block";
-                setTimeout(() => {
-                    modal.classList.add("modal-show");
-                    console.log(modal);
-                }, 50);
-            }
+    </section>
+    <section class="py-10 px-5">
+        <h2 class="text-xl mb-5">Popular on Netflix</h2>
+        <div class="flex flex-wrap gap-5">
+            {% for movie in movies reversed %}
+            <div class="w-40 h-64 flex-shrink-0 film-card" onclick="showModal(this)" data-title="{{ movie.title }}"
+                data-description="{{ movie.description }}" data-release-date="{{ movie.release_date}}"
+                data-genre="{{ movie.genre }}"
+                data-image-card-url="{{ movie.image_card.url }}" data-image-cover-url="{{ movie.image_cover.url }}"
+                data-id="{{ movie.tmdb_id }}" length = "{{ movie.length }}"
+                style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;">
+            </div>
+            {% endfor %}
+        </div>
+    </section>
 
-            function hideModal() {
-                const modal = document.querySelector(".modal");
-                modal.classList.remove("modal-show");
-                setTimeout(() => {
-                    modal.style.display = "none";
-                }, 300);
+    <!-- Modal -->
+    <div class="modal" id="movieModal">
+        <div class="modal-content">
+            <div class="flex justify-between">
+                <h2 class="text-xl mb-5">Movie Title</h2>
+                <button onclick="hideModal()">X</button>
+            </div>
+            <img width="1000" height="100"
+                src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg"
+                alt="Movie Image" class=" mb-5">
+            <div class="flex justify-between mb-5">
+                <span>Year: 2023</span>
+                <span class="genre">Genres</span>
+                <span>Length: 2h 15min</span>
+            </div>
+            <p class="mb-5">Detailed information about the movie.</p>
+            <div class="flex space-x-4 mb-5">
+                <a href="#">
+                    <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500 playbutton">Play</button>
+                </a>
+                <button class="addToListButton" onclick="addItemToList(this)"
+                    class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700"
+                    data-id="{{ movie.tmdb_id }}">
+                    Add to List
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        function showModal(element) {
+            let length = element.getAttribute('length');
+            length = Math.floor(length / 60) + " hrs " + length % 60 + " min";
+            // Retrieve data attributes
+            const title = element.getAttribute('data-title');
+            const description = element.getAttribute('data-description');
+            const releaseDate = element.getAttribute('data-release-date');
+            const genre = element.getAttribute('data-genre');
+            const imageCardUrl = element.getAttribute('data-image-card-url');
+            const imageCoverUrl = element.getAttribute('data-image-cover-url');
+            const dataVideoUrl = element.getAttribute('data-id');
+            const tmdbId = element.getAttribute('data-id');
+            // Get the modal element
+            const modal = document.getElementById('movieModal');
+            // Update the Add to List button in the modal
+            const selectButton = modal.querySelector('.addToListButton');
+            selectButton.textContent = 'Add to List';
+            $(selectButton).prop('disabled', false);
+            selectButton.setAttribute('data-id', tmdbId);
+            // Update the modal's content with the movie details
+            modal.querySelector('.modal-content h2').textContent = title;
+            modal.querySelector('.modal-content img').src = imageCoverUrl;
+            modal.querySelector('.modal-content img').alt = title + " Cover Image";
+            modal.querySelector('.modal-content .flex span:first-child').textContent = "Year: " + releaseDate;
+            modal.querySelector('.modal-content .flex span:nth-child(2)').textContent = "Genre: " + genre;
+            modal.querySelector('.modal-content .flex span:last-child').textContent = "Length: " + length;
+            modal.querySelector('.modal-content p').textContent = description;
+            modal.querySelector('a').href = `trailer?id=${tmdbId}`;
+            modal.querySelector('.genre').textContent = genre;
+            // Show the modal
+            modal.style.display = 'block';
+            setTimeout(() => {
+                modal.classList.add('modal-show');
+                console.log(modal);
+            }, 50);
+        }
+
+        function hideModal() {
+            const modal = document.querySelector('.modal');
+            modal.classList.remove('modal-show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('movieModal')) {
+                hideModal();
             }
-            window.onclick = function (event) {
-                if (event.target === document.getElementById("movieModal")) {
-                    hideModal();
+        }
+
+        function addItemToList(element) {
+            const id = element.getAttribute('data-id');
+            console.log(id);
+            $.ajax({
+                url: "{% url 'home-add-to-list' %}",
+                type: "POST",
+                data: {
+                    tmdb_id: id,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function(data) {
+                    $(element).text(data.message);
+                    $(element).prop('disabled', true);
+                    console.log("Item added to list!");
+                },
+                error: function(xhr, errmsg, err) {
+                    console.error("Error adding item to list: " + errmsg);
                 }
-            };
+            });
+        }
+    </script>
+</body>
 
-            function addItemToList(element) {
-                const id = element.getAttribute("data-id");
-                console.log(id);
-                $.ajax({
-                    url: "{% url 'home-add-to-list' %}",
-                    type: "POST",
-                    data: {
-                        tmdb_id: id,
-                        csrfmiddlewaretoken: "{{ csrf_token }}"
-                    },
-                    success: function (data) {
-                        $(element).text(data.message);
-                        $(element).prop("disabled", true);
-                        console.log("Item added to list!");
-                    },
-                    error: function (xhr, errmsg, err) {
-                        console.error("Error adding item to list: " + errmsg);
-                    }
-                });
-            }
-        </script>
-    </body>
 </html>
