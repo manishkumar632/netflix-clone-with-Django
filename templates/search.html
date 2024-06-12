@@ -9,68 +9,19 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <style>
-        /* Remove grid-related styles */
-        .movie-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-
-        .film-card {
-            width: calc(33.33% - 20px); /* Adjust width based on the number of items per row */
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        @media screen and (max-width: 768px) {
-            .film-card {
-                width: calc(50% - 20px); /* Adjust width for smaller screens */
-            }
-        }
-
-        @media screen and (max-width: 480px) {
-            .film-card {
-                width: 100%; /* Full width for extra small screens */
-            }
-        }
-    </style>
 </head>
+<style>
+    .hide {
+        display: none;
+    }
+
+    .show {
+        display: block;
+    }
+</style>
 
 <body class="text-white" style="background-color: #141414;">
-    <header class="p-5 flex justify-between items-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
-        
-        <nav class="flex space-x-5">
-            <span><a href="/">Home</a></span>
-            <div class="dropdown">
-                <span id="dropdownMenuButton" class="cursor-pointer">Genres ▼</span>
-                <div id="dropdownMenu" class="dropdown-content hidden">
-                    <ul><a href="/genre/action/">Action</a></ul>
-                    <ul><a href="/genre/comedy/">Comedy</a></ul>
-                    <ul><a href="/genre/drama/">Drama</a></ul>
-                    <ul><a href="/genre/horror/">Horror</a></ul>
-                    <ul><a href="/genre/romance/">Romance</a></ul>
-                    <ul><a href="/genre/sciencefiction/">Science Fiction</a></ul>
-                    <ul><a href="/genre/fantasy/">Fantasy</a></ul>
-                </div>
-            </div>
-            <span><a href="/my-list">My List</a></span>
-        </nav>
-
-        <div class="flex space-x-5 items-center">
-            <form action="search" method="POST">
-                {% csrf_token %}
-                <input type="search" name="search_term" placeholder="Search" class="bg-gray-700 p-2 rounded">
-                <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
-            </form>
-            <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{ user.username }}</a>
-                <a href="/logout" class="block p-2">Logout</a>
-            </div>
-        </div>
-    </header>
-    
+    {% include 'header.html' %}
     <hr>
 
     <section class="py-10 px-5">
@@ -81,108 +32,115 @@
         </div>
         <div class="flex flex-wrap gap-5">
             {% if movies %}
-                {% for movie in movies %}
-                    <div class="w-30 h-64 flex-shrink-0 film-card"
-                        onclick="showModal(this)"
-                        data-title="{{ movie.title }}"
-                        data-description="{{ movie.overview }}"
-                        data-release-date="{{ movie.release_date|date:'Y' }}"
-                        data-genre="{{ movie.genre_ids }}"
-                        data-length="{{ movie.runtime }}"
-                        data-image-card-url="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}"
-                        data-image-cover-url="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}"
-                        data-video-url="/movie/{{ movie.id }}"
-                        style="background-image: url('https://image.tmdb.org/t/p/w500{{ movie.poster_path }}');background-size: cover; background-position: center;">
-                    </div>
-                {% endfor %}
+            {% for movie in movies %}
+            <div class="w-30 h-64 flex-shrink-0 film-card" onclick="showModal(this)" title="{{ movie.title }}"
+                description="{{ movie.overview }}" image="https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}"
+                id="{{ movie.id }}" release_date="{{ movie.release_date }}" genres="{% for genre in movie.genres %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}" length="{{ movie.runtime }}"
+                style="background-image: url('https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}'); background-size: cover; background-position: center; cursor: pointer;">
+            </div>
+            {% endfor %}
             {% else %}
-                <p>No results found.</p>
+            <p>No results found.</p>
             {% endif %}
         </div>
     </section>
 
     <!-- Modal -->
-    <div class="modal" id="movieModal">
+    <div class="hide" id="movieCard"
+        style="z-index: 10; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-content">
             <div class="flex justify-between">
                 <h2 class="text-xl mb-5">Movie Title</h2>
-                <button onclick="hideModal()">X</button>
+                <button onclick="hideMovieCard()">X</button>
             </div>
-            <img width="1000" height="100" src="" alt="Movie Image" class="mb-5">
+            <img width="1000" height="100"
+                src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg"
+                alt="Movie Image" class=" mb-5">
             <div class="flex justify-between mb-5">
-                <span>Year: </span>
-                <span>Genre: </span>
-                <span>Length: </span>
+                <span class="date">Year: 2023</span>
+                <span class="genre">Genres</span>
+                <span class="runtime">Length: 2h 15min</span>
             </div>
             <p class="mb-5">Detailed information about the movie.</p>
             <div class="flex space-x-4 mb-5">
-                <a href="movie.html">
+                <a id="playButton" href="#">
                     <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
                 </a>
-                <button id="addToListButton" onclick="addItemToList()" class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700">
+                <button id="addToListButton" onclick="addItemToList(this)"
+                    class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700" data-id="">
                     Add to List
                 </button>
             </div>
         </div>
     </div>
     <script>
+        let movie;
+        function showMovieCard() {
+            const element = document.getElementById("movieCard");
+            element.classList.remove("hide");
+            element.classList.add("show");
+        }
+
+        function hideMovieCard() {
+            const element = document.getElementById("movieCard");
+            element.classList.remove("show");
+            element.classList.add("hide");
+        }
+
         function showModal(element) {
-            // Retrieve data attributes
-            const title = element.getAttribute('data-title');
-            const description = element.getAttribute('data-description');
-            const releaseDate = element.getAttribute('data-release-date');
-            const genre = element.getAttribute('data-genre');
-            const length = element.getAttribute('data-length');
-            const imageCardUrl = element.getAttribute('data-image-card-url');
-            const imageCoverUrl = element.getAttribute('data-image-cover-url');
-            const dataVideoUrl = element.getAttribute('data-video-url');
-        
-            // Update the modal's content with the movie details
-            const modal = document.getElementById('movieModal');
-            modal.querySelector('.modal-content h2').textContent = title;
-            modal.querySelector('.modal-content img').src = imageCoverUrl;
-            modal.querySelector('.modal-content a').href = dataVideoUrl;  
-            modal.querySelector('.modal-content img').alt = title + " Cover Image";
-            modal.querySelector('.modal-content .flex span:first-child').textContent = "Year: " + releaseDate;
-            modal.querySelector('.modal-content .flex span:nth-child(2)').textContent = "Genre: " + genre;
-            modal.querySelector('.modal-content .flex span:last-child').textContent = "Length: " + length + "min";
-            modal.querySelector('.modal-content p').textContent = description;
-        
-            // Show the modal
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.classList.add('modal-show');
-            }, 50);
-        }
-        
-        function hideModal() {
-            const modal = document.querySelector('.modal');
-            modal.classList.remove('modal-show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
-        }
-
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('movieModal')) {
-                hideModal();
+            length = element.getAttribute('length');
+            length = Math.floor(length / 60) + " hrs " + length % 60 + " min";
+            movie = {
+                title: element.getAttribute('title'),
+                description: element.getAttribute('description'),
+                release_date: element.getAttribute('release_date'),
+                genre: element.getAttribute('genres'),
+                length: Number(element.getAttribute('length')),
+                image_card: element.getAttribute('image'),
+                image_cover: element.getAttribute('image'),
+                id: element.getAttribute('id'),
+                video: element.getAttribute('image'),
+                movie_views: 0,
+                tmdb_id: Number(element.getAttribute('id')),
+                uu_id: Number(element.getAttribute('id')),
             }
+            const title = element.getAttribute('title');
+            const description = element.getAttribute('description');
+            const image = element.getAttribute('image');
+            const id = element.getAttribute('id');
+            const release_date = "Year: " + element.getAttribute('release_date');
+            const movieCard = document.getElementById('movieCard');
+
+            const selectButton = document.getElementById('addToListButton');
+            selectButton.textContent = 'Add to List';
+            $(selectButton).prop('disabled', false);
+            selectButton.setAttribute('data-id', id);
+
+            movieCard.querySelector('h2').textContent = title;
+            movieCard.querySelector('img').src = image;
+            movieCard.querySelector('p').textContent = description;
+            movieCard.querySelector('.date').textContent = release_date;
+            movieCard.querySelector('.genre').textContent = "Genres: " + element.getAttribute('genres');
+            movieCard.querySelector('.runtime').textContent = "Length: " + length;
+            movieCard.querySelector('#playButton').href = `trailer?id=${id}`;
+            setTimeout(() => {
+                showMovieCard();
+                console.log("Modal shown");
+            }, 100);
         }
 
-        function addItemToList() {
-            const modal = document.getElementById('movieModal');
-            const movieID = modal.querySelector('.modal-content a').href;
-
+        function addItemToList(element) {
             $.ajax({
-                url: "{% url 'add-to-list' %}",
+                url: "{% url 'search-add-to-list' %}",
                 type: "POST",
                 data: {
-                    movie_id: movieID,
+                    id: movie.id,
+                    movie: JSON.stringify(movie),
                     csrfmiddlewaretoken: "{{ csrf_token }}"
                 },
                 success: function(data) {
-                    $('#addToListButton').text(data.message);
-                    $('#addToListButton').prop('disabled', true);
+                    $(element).text(data.message);
+                    $(element).prop('disabled', true);
                     console.log("Item added to list!");
                 },
                 error: function(xhr, errmsg, err) {

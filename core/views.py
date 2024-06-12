@@ -1,23 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
 from .models import Movie, MovieList
-from datetime import datetime
 from django.contrib.auth.decorators import login_required
-import re, requests, json, urllib.parse
+import requests, json, urllib.parse
 from django.http import JsonResponse
-from django.core.serializers import serialize
 from decouple import config
-from datetime import datetime
-
-
-@login_required(login_url="login")
-def convetDateTime(date):
-    date_str = date
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-    formatted_date = date_obj.strftime("%b %d, %Y")
-    print(formatted_date)
-    return formatted_date
 
 
 def index(request):
@@ -75,7 +63,6 @@ def signup(request):
 @login_required(login_url="login")
 def movie(request, pk):
     movie = Movie.objects.get(uu_id=pk)
-    context = {"movie_details": movie}
     return render(request, "movie.html", {"movie": movie})
 
 
@@ -91,19 +78,16 @@ def logout(request):
 
 
 @login_required(login_url="login")
-def add_to_list(request):
+def home_add_to_list(request):
     if request.method == "POST":
-        tmdb_id = request.POST["tmdb_id"]
-        movie = get_object_or_404(Movie, tmdb_id=tmdb_id)
-        movie_in_list, created = MovieList.objects.get_or_create(
-            owner_user=request.user, movie=movie
-        )
-        if created:
-            response_data = {"status": "success", "message": "Added ✔"}
+        movie = Movie.objects.get(tmdb_id=request.POST["tmdb_id"])
+        if MovieList.objects.filter(owner_user=request.user, movie=movie).exists():
+            return JsonResponse(
+                {"status": "error", "message": "Movie already in your list"}
+            )
         else:
-            response_data = {"status": "error", "message": "Movie already in your list"}
-
-        return JsonResponse(response_data)
+            MovieList.objects.create(owner_user=request.user, movie=movie)
+            return JsonResponse({"status": "success", "message": "Added ✔"})
     else:
         return JsonResponse({"status": "error", "message": "Invalid request"})
 
@@ -112,21 +96,7 @@ def add_to_list(request):
 def my_list(request):
     movie_lists = MovieList.objects.filter(owner_user=request.user)
     movie_list = [movie.movie for movie in movie_lists]
-    movie_list_json = serialize(
-        "json",
-        movie_list,
-        fields=(
-            "title",
-            "description",
-            "release_date",
-            "get_genre_display",
-            "length",
-            "image_card",
-            "image_cover",
-            "uu_id",
-        ),
-    )
-    return render(request, "my_list.html", {"movies_json": movie_list_json})
+    return render(request, "my_list.html", {"movies": movie_list})
 
 
 def search(request):
@@ -140,7 +110,62 @@ def search(request):
         }
         response = requests.get(url, headers=headers)
         movies_data = response.json().get("results", [])
+        movies_data = [movie for movie in movies_data if movie.get("backdrop_path")]
+        movie_ids = [movie["id"] for movie in movies_data]
+
+        for id in movie_ids:
+            url = "https://api.themoviedb.org/3/movie/{}".format(id)
+            response = requests.get(url, headers=headers)
+            movie = response.json()
+            movies_data[movie_ids.index(id)] = movie
         return render(
             request, "search.html", {"search_term": search_term, "movies": movies_data}
         )
     return render(request, "search.html", {"search_term": "", "movies": []})
+
+
+@login_required(login_url="login")
+def search_add_to_list(request):
+    if request.method == "POST":
+        movie_data = request.POST.get("movie")
+        movie_data = json.loads(movie_data)
+        id = movie_data.get("id")
+        if MovieList.objects.filter(owner_user=request.user, movie__tmdb_id=id).exists():
+            return JsonResponse(
+                {"status": "error", "message": "Movie already in your list"}
+            )
+        movie, created = Movie.objects.get_or_create(tmdb_id=id, defaults=movie_data)
+        MovieList.objects.create(owner_user=request.user, movie=movie)
+        return JsonResponse({"status": "success", "message": "Added ✔"})
+
+def trailer(request):
+    id = request.GET.get("id")
+    url = "https://api.themoviedb.org/3/movie/{}/videos".format(id)
+    print(url)
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer " + config("TOKEN"),
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    filtered_data = [video for video in data["results"] if video["type"] == "Trailer"]
+    if not filtered_data:
+        return render(request, "movie.html")
+    else:
+        return render(request, "movie.html", {"key": filtered_data[0]["key"]})
+
+
+def genre(request, genre):
+    print(genre)
+    movies = Movie.objects.filter(genre__icontains=genre)
+    return render(request, "genre.html", {"movies": movies})
+
+
+def remove_from_list(request):
+    if request.method == "POST":
+        movie_id = request.POST.get("id")
+        MovieList.objects.filter(owner_user=request.user, movie__tmdb_id=movie_id).delete()
+        return JsonResponse({"status": "success", "message": "Removed ✔"})
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid request"})

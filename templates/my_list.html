@@ -10,164 +10,128 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .hide {
+            display: none;
+        }
+    
+        .show {
+            display: block;
+        }
+    </style>
 </head>
 
 <body class="text-white" style="background-color: #141414;">
-    <header class="p-5 flex justify-between items-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
-        
-        <nav class="flex space-x-5">
-            <span><a href="/">Home</a></span>
-            
-            <div class="dropdown">
-                <span id="dropdownMenuButton" class="cursor-pointer">Genres ▼</span>
-                
-                <div id="dropdownMenu" class="dropdown-content hidden">
-                    <ul><a href="/genre/action/">Action</a></ul>
-                    <ul><a href="/genre/comedy/">Comedy</a></ul>
-                    <ul><a href="/genre/drama/">Drama</a></ul>
-                    <ul><a href="/genre/horror/">Horror</a></ul>
-                    <ul><a href="/genre/romance/">Romance</a></ul>
-                    <ul><a href="/genre/sciencefiction/">Science Fiction</a></ul>
-                    <ul><a href="/genre/fantasy/">Fantasy</a></ul>
-                </div>
-            </div>
+    {% include 'header.html' %}
 
-            <span><a href="/my-list">My List</a></span>
-        </nav>
-
-        <div class="flex space-x-5 items-center">
-            <form action="search" method="POST">
-                {% csrf_token %}
-                <input type="search" name="search_term" placeholder="Search" class="bg-gray-700 p-2 rounded">
-                <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
-            </form>
-            <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{ user.username }}</a>
-                <a href="/logout" class="block p-2">Logout</a>
-            </div>
-        </div>
-    </header>
-    
     <hr>
 
     <section class="py-10 px-5">
         <div align="center">
             <h2 class="text-xl mb-5">My List</h2>
         </div>
-        <div class="flex space-x-5 overflow-x-auto" id="movie-list">
-            <!-- Movies will be injected here by JavaScript -->
+        <div class="flex flex-wrap gap-5">
+            {% if movies %}
+            {% for movie in movies %}
+            <div class="w-30 h-64 flex-shrink-0 film-card" onclick="showModal(this)" title="{{ movie.title }}"
+                description="{{ movie.description }}" image="{{ movie.image_card.url }}" id="{{ movie.tmdb_id }}"
+                release_date="{{ movie.release_date }}" genres="{{ movie.genre }}" length="{{ movie.length }}"
+                style="background-image: url('{{ movie.image_card.url }}'); background-size: cover; background-position: center; cursor: pointer;">
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>No results found.</p>
+            {% endif %}
         </div>
     </section>
-    
+
     <!-- Modal -->
-    <div class="modal" id="movieModal">
+    <div class="hide" id="movieCard"
+        style="z-index: 10; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-content">
             <div class="flex justify-between">
-                <h2 class="text-xl mb-5" id="modal-title">Movie Title</h2>
-                <button onclick="hideModal()">X</button>
+                <h2 class="text-xl mb-5">Movie Title</h2>
+                <button onclick="hideMovieCard()">X</button>
             </div>
-            <img id="modal-image" width="1000" height="100" src="" alt="Movie Image" class="mb-5">
+            <img width="1000" height="100"
+                src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg"
+                alt="Movie Image" class=" mb-5">
             <div class="flex justify-between mb-5">
-                <span id="modal-year">Year: </span>
-                <span id="modal-length">Length: </span>
+                <span class="date">Year: 2023</span>
+                <span class="genre">Genres</span>
+                <span class="runtime">Length: 2h 15min</span>
             </div>
-            <p class="mb-5" id="modal-description">Detailed information about the movie.</p>
+            <p class="mb-5">Detailed information about the movie.</p>
             <div class="flex space-x-4 mb-5">
-                <a id="modal-video-link" href="">
+                <a id="playButton" href="#">
                     <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
                 </a>
-                <button id="addToListButton" onclick="addItemToList()" class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700">
-                    Add to List
+                <button id="addToListButton" onclick="RemoveFromList(this)"
+                    class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700" data-id="">
+                    Remove
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const movies = JSON.parse('{{ movies_json|escapejs }}');
-            const movieListContainer = document.getElementById('movie-list');
-            
-            movies.forEach(movie => {
-                const movieCard = document.createElement('div');
-                movieCard.className = 'w-40 h-64 flex-shrink-0 film-card';
-                movieCard.style.backgroundImage = `url(${movie.fields.image_card})`;
-                movieCard.style.backgroundSize = 'cover';
-                movieCard.style.backgroundPosition = 'center';
-                movieCard.setAttribute('data-title', movie.fields.title || 'Unknown Title');
-                movieCard.setAttribute('data-description', movie.fields.description || 'No description available.');
-                movieCard.setAttribute('data-release-date', movie.fields.release_date || 'Unknown Year');
-                movieCard.setAttribute('data-genre', movie.fields.get_genre_display || 'Unknown Genre');
-                movieCard.setAttribute('data-length', movie.fields.length || 'Unknown Length');
-                movieCard.setAttribute('data-image-card-url', movie.fields.image_card || '');
-                movieCard.setAttribute('data-image-cover-url', movie.fields.image_cover || '');
-                movieCard.setAttribute('data-video-url', movie.fields.uu_id ? `/movie/${movie.fields.uu_id}` : '#');
-                movieCard.onclick = function() { showModal(this); };
+        function showMovieCard() {
+            const element = document.getElementById("movieCard");
+            element.classList.remove("hide");
+            element.classList.add("show");
+        }
 
-                movieListContainer.appendChild(movieCard);
-            });
-        });
+        function hideMovieCard() {
+            const element = document.getElementById("movieCard");
+            element.classList.remove("show");
+            element.classList.add("hide");
+        }
 
         function showModal(element) {
-            const title = element.getAttribute('data-title');
-            const description = element.getAttribute('data-description');
-            const releaseDate = element.getAttribute('data-release-date');
-            const genre = element.getAttribute('data-genre');
-            const length = element.getAttribute('data-length');
-            const imageCoverUrl = element.getAttribute('data-image-cover-url');
-            const dataVideoUrl = element.getAttribute('data-video-url');
-
-            const modal = document.getElementById('movieModal');
-            modal.querySelector('#modal-title').textContent = title;
-            modal.querySelector('#modal-image').src = imageCoverUrl || '';
-            modal.querySelector('#modal-video-link').href = dataVideoUrl || '#';
-            modal.querySelector('#modal-image').alt = title + " Cover Image";
-            modal.querySelector('#modal-year').textContent = "Year: " + releaseDate;
-            modal.querySelector('#modal-length').textContent = "Length: " + length + " min";
-            modal.querySelector('#modal-description').textContent = description;
-
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.classList.add('modal-show');
-            }, 50);
-        }
-        
-        function hideModal() {
-            const modal = document.getElementById('movieModal');
-            modal.classList.remove('modal-show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
+            length = element.getAttribute('length');
+            length = Math.floor(length / 60) + " hrs " + length % 60 + " min";
+            const title = element.getAttribute('title');
+            const description = element.getAttribute('description');
+            const image = element.getAttribute('image');
+            const id = element.getAttribute('id');
+            const release_date = "Year: " + element.getAttribute('release_date');
+            const movieCard = document.getElementById('movieCard');
+            const selectButton = document.getElementById('addToListButton');
+            selectButton.textContent = 'Remove';
+            $(selectButton).prop('disabled', false);
+            selectButton.setAttribute('data-id', id);
+            movieCard.querySelector('h2').textContent = title;
+            movieCard.querySelector('img').src = image;
+            movieCard.querySelector('p').textContent = description;
+            movieCard.querySelector('.date').textContent = release_date;
+            movieCard.querySelector('.genre').textContent = "Genres: " + element.getAttribute('genres');
+            movieCard.querySelector('.runtime').textContent = "Length: " + length;
+            movieCard.querySelector('#playButton').href = `trailer?id=${id}`;
+            setTimeout(() => { 
+                showMovieCard();
+                console.log("Modal shown");
+            }, 100);
         }
 
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('movieModal')) {
-                hideModal();
+        function RemoveFromList(element) {
+            const id = element.getAttribute('data-id');
+                $.ajax({
+                    url: "{% url 'remove-movie-from-list' %}",
+                    type: "POST",
+                    data: {
+                        id: id,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    },
+                    success: function (data) {
+                        $(`.film-card[id='${id}']`).remove();
+                        hideMovieCard();
+                    },
+                    error: function (xhr, errmsg, err) {
+                        console.error("Error adding item to list: " + errmsg);
+                    }
+                });
             }
-        }
-
-        function addItemToList() {
-            const modal = document.getElementById('movieModal');
-            const movieID = modal.querySelector('#modal-video-link').href.split('/').pop();
-
-            $.ajax({
-                url: "{% url 'add-to-list' %}",
-                type: "POST",
-                data: {
-                    movie_id: movieID,
-                    csrfmiddlewaretoken: "{{ csrf_token }}"
-                },
-                success: function(data) {
-                    $('#addToListButton').text(data.message);
-                    $('#addToListButton').prop('disabled', true);
-                    console.log("Item added to list!");
-                },
-                error: function(xhr, errmsg, err) {
-                    console.error("Error adding item to list: " + errmsg);
-                }
-            });
-        }
     </script>
 </body>
+
 </html>

@@ -1,0 +1,20 @@
+<div class="w-30 h-64 flex-shrink-0 film-card" onclick="showModal(this)"
+    title="{{ movie.title }}"
+    description="{{ movie.overview }}"
+    release-date="{{ movie.release_date }}"
+    genre="{{ movie.genre_ids }}"
+    length="{{ movie.runtime }}"
+    {% if movie.image_card.url %}
+        image-card-url="{{ movie.image_card.url }}"
+        image-cover-url="{{ movie.image_card.url }}"
+        video-url="{{ movie.image_card.url }}"
+        style="background-image: url('{{ movie.image_card.url }}'); background-size: cover; background-position: center;"
+    {% else %}
+        image-card-url="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}"
+        image-cover-url="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}"
+        video-url="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}"
+        style="background-image: url('https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}'); background-size: cover; background-position: center;">
+    {% endif %}
+    data-id="{{ movie.tmdb_id }}"
+    data-uuid="{{ movie.uu_id }}"
+</div>
