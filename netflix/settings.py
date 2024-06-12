@@ -22,6 +22,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=lambda v: [s.strip() for s in v.split(",")])
+CSRF_TRUSTED_ORIGINS = ["https://moviex-zygb.onrender.com"]
 
 # Application definition
 
