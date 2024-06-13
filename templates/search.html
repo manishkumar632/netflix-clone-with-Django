@@ -125,7 +125,6 @@
             movieCard.querySelector('#playButton').href = `trailer?id=${id}`;
             setTimeout(() => {
                 showMovieCard();
-                console.log("Modal shown");
             }, 100);
         }
 
@@ -141,7 +140,6 @@
                 success: function(data) {
                     $(element).text(data.message);
                     $(element).prop('disabled', true);
-                    console.log("Item added to list!");
                 },
                 error: function(xhr, errmsg, err) {
                     console.error("Error adding item to list: " + errmsg);
