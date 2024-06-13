@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 import requests, json, urllib.parse
 from django.http import JsonResponse
 from decouple import config
+from urllib.parse import unquote
 
 accept = config("ACCEPT", )
 authorization = config("AUTHORIZATION")
@@ -152,7 +153,8 @@ def trailer(request):
 
 
 def genre(request, genre):
-    movies = Movie.objects.filter(genre__icontains=genre)
+    decoded_genre = unquote(genre)
+    movies = Movie.objects.filter(genre__icontains=decoded_genre)
     return render(request, "genre.html", {"movies": movies})
 
 
