@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, auth
 from django.contrib import messages
 from .models import Movie, MovieList
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 import requests, json, urllib.parse
 from django.http import JsonResponse
 from decouple import config
@@ -127,6 +128,7 @@ def search(request):
 
 
 @login_required(login_url="/login")
+@require_POST
 def search_add_to_list(request):
     if request.method == "POST":
         movie_data = request.POST.get("movie")
