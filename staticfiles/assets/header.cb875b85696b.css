@@ -1,0 +1,11 @@
+.logo{
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+.logo h1{
+    color: white !important;
+}
