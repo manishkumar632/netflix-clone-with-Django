@@ -8,13 +8,6 @@
                 "installCommand": "pip install -r requirements.txt",
                 "buildCommand": "./build_files.sh"
             }
-        },
-        {
-            "src": "static/**/*",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "staticfiles"
-            }
         }
     ],
     "routes": [
