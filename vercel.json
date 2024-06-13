@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "manage.py",
+            "use": "@vercel/python",
+            "config": { "zeroConfig": true }
+        }
+    ],
+    "routes": [
+        { "src": "/static/(.*)", "dest": "/static/$1" },
+        { "src": "/(.*)", "dest": "/manage.py" }
+    ]
+}
