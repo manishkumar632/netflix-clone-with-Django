@@ -126,7 +126,7 @@ def search(request):
     return render(request, "search.html", {"search_term": "", "movies": []})
 
 
-@login_required(login_url="login")
+@login_required(login_url="/login")
 def search_add_to_list(request):
     if request.method == "POST":
         movie_data = request.POST.get("movie")
