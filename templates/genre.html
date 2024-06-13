@@ -71,6 +71,7 @@
 
     <script>
         const movie_genre = window.location.pathname.split("/").pop();
+        movie_genre = movie_genre.replace("%20", " ");
         document.querySelector('.genre').textContent = movie_genre.toUpperCase() + " Films";
         function showModal(element) {
             // Retrieve data attributes
